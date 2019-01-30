@@ -1,0 +1,415 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html style='overflow-y:hidden;'>
+
+<head>
+    <title>makEasy</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open Sans:300">
+    <link rel="stylesheet" type="text/css" href='{%static "webres/static/css/me.css" %}'>
+    <script src='{%static "webres/static/js/meForm.js" %}'></script>
+    <script src='{%static "webres/static/js/meTHREEitems.js" %}'></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipper-js@1.0.2/lib/index.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.serializeJSON/2.8.1/jquery.serializejson.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/85/three.min.js"></script>
+    <script src="https://rawgit.com/mrdoob/three.js/master/examples/js/controls/OrthographicTrackballControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script src="https://fastcdn.org/FileSaver.js/1.1.20151003/FileSaver.min.js"></script>
+
+    <script>
+        var csrftoken = Cookies.get('csrftoken');
+        var meProject={};
+        var PRJdata=[];
+        var MODIFICATION_IN_PROGRESS=false
+        var PARAMETERS_MODIFIED=true
+        var MATERIALS={};
+    </script>
+    <script id="prjScript">
+       function update_shape(){};
+       function updateObjects(){};
+    </script>
+    <style>
+        div.header, #menu ul li, ul a.menu, .makEasy th, span.glyphicon {background-color: #8cb3d9; color:  #204060;}
+        img.camera {width:36px;height:36px;cursor:pointer;}
+    </style>
+
+</head>
+
+<body>
+    <div id='header' class='header' style="height:60px;z-index: 3;" >
+        <h1>articoli</h1>
+        <nav style="display:inline; margin-left:20%;" >
+            <ul id="menu" style="display:inline;">
+            </ul>
+            <input type="file" accept=".mePrj," name="files[]" id="selectfiles" style="display:none">
+        </nav>
+    </div>
+
+    <div id='content' class='content' style="z-index:2;">
+        <div class='param'
+             style="display:block;
+                    z-index:3;
+                    position:absolute;
+                    overflow-x:hidden;
+                    overflow-y:hidden;
+                    height:97%;
+                    width:400px;">
+
+            <h2 id="title" style="margin-left:10px; width: 100%;"> </h2>
+            <div class='vertical_scrollbar_left' style="width:100%;">
+            <form action="#" enctype="multipart/form-data" id="data_form" method="post">
+                <table id="projects"
+                       class='makEasy'
+                       style="direction:ltr;
+                              width:100%;
+                              left:10px;">
+                    <colgroup>
+                        <col width="50%">
+                        <col width="5%">
+                        <col width="45%">
+                    </colgroup>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>
+                </table>
+            </form>
+            </div>
+        </div>
+        <div id="3Dscene" style="float:left;width:100%;height:90vh;z-index: 1;"></div>
+    </div>
+
+    <div id='footer' style="height:50px;position:absolute;bottom:0px;right:5px;z-index:3;">
+        <img class="svg camera" src="{%static 'webres/static/img/view_front.svg' %}" onclick=rotateCamera('front')>
+        <img class="svg camera" src="{%static 'webres/static/img/view_top.svg' %}"   onclick=rotateCamera('top')>
+        <img class="svg camera" src="{%static 'webres/static/img/view_right.svg' %}" onclick=rotateCamera('right')>
+        <img class="svg camera" src="{%static 'webres/static/img/view_rear.svg' %}"  onclick=rotateCamera('rear')>
+        <img class="svg camera" src="{%static 'webres/static/img/view_bottom.svg' %}"onclick=rotateCamera('bottom')>
+        <img class="svg camera" src="{%static 'webres/static/img/view_left.svg' %}"  onclick=rotateCamera('left')>
+        <img src="{%static 'webres/static/img/soldinisnc.png' %}" style="opacity:0.8;margin-left:15px; float:right;padding:2px; width:119px; height:39px;">
+    </div>
+
+
+    <script>
+        $.serializeJSON.defaultOptions.parseAll = true;
+    </script>
+
+    <script src="{%static 'webres/static/js/meTHREEfunctions.js' %}"></script>
+    <script src="{%static 'webres/static/js/meTHREEscene.js' %}"></script>
+
+    <script id="formScript">
+
+        var VIEW_POSITION={ "front":
+                               {x:0.0,
+                                y: -8000.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "top":
+                               {x: 0.0,
+                                y: 0.0,
+                                z: 8000.0,
+                                upX:0.0,
+                                upY:1.0,
+                                upZ:0.0},
+                            "right":
+                               {x: 8000.0,
+                                y: 0.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "rear":
+                               {x: 0.0,
+                                y: 8000.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0},
+                            "bottom":
+                               {x: 0.0,
+                                y: 0.0,
+                                z: -8000.0,
+                                upX:0.0,
+                                upY:1.0,
+                                upZ:0.0},
+                            "left":
+                               {x: -8000.0,
+                                y: 0.0,
+                                z: 0.0,
+                                upX:0.0,
+                                upY:0.0,
+                                upZ:1.0}
+        }
+
+        function update_all()
+                            {
+                                update_prj_data();
+                                update_shape();
+                                if (MODIFICATION_IN_PROGRESS==false)
+                                    {
+                                        PARAMETERS_MODIFIED=true;
+                                        update_item();
+                                    }
+                            }
+
+
+    </script>
+
+    <script id="menuScript">
+    meForm.loadMenu
+                 ({"Progetti":
+                       {"on_click":"action_nuovo('')",
+                        "child":
+                            {
+                             "Carica Progetto":
+                               {
+                                "on_click":"$('#selectfiles').trigger('click')",
+                                "show":true
+                               },
+                               "Salva Progetto":
+                               {
+                                "on_click":"action_savePrj()",
+                                "show":true
+                               },
+                            "----------------":{"show":true},
+                            "Piastra":
+                               {
+                                "on_click":"action_nuovo('Piastra')",
+                                "show":true
+                               },
+                            "Flangia Circolare":
+                               {
+                                "on_click":"action_nuovo('CircularFlange')",
+                                "show":true
+                               },
+                            "Tronco di Cono":
+                               {
+                                "on_click":"action_nuovo('Tronco di Cono')",
+                                "show":true
+                               },
+                            "Profilo da Lamiera":
+                               {
+                                "on_click":"action_nuovo('Lamiera Piegata')",
+                                "show":true
+                               }
+                            },
+                       "show":true
+                      },
+                  "Costi":{"show":false,"on_click":"location.href = 'estimate';"},
+                  "Produzione":{"show":false,
+                                "child":
+                                {
+                                    "Esporta DXF taglio":{"show":true,"on_click":"action_esportaDXF()"},
+                                    "Esporta STL":{"show":true,"on_click":"action_esportaSTL()"},
+                                    "Ordina Prodotto":{"show":false}
+                                }
+                               }
+             })
+
+
+    meForm.updateMenu();
+    document.getElementById('selectfiles').addEventListener('change',loadPrj, false);
+
+
+    function clear_all()
+    {
+        localStorage.clear();
+        meForm.disableMenuOption("Costi");
+        meForm.disableMenuOption("Produzione");
+        meForm.updateMenu();
+        meForm.afterDeployForm=function(){update_all();};
+        if (objects.project){scene.remove(objects.project.element)}
+        $('table#projects tbody').empty();
+        $('h2#title').empty();
+    }
+
+
+    function action_nuovo(projectname)
+    {
+        clear_all();
+
+        //invio chiamata ajax
+            $.ajax({
+            url: "new",
+            type: "POST",
+            data: {'prj_name':projectname,'csrfmiddlewaretoken':csrftoken},
+            dataType: "json",
+            success:function(result)
+                   {
+                    console.log(result)
+                    if (result.prj_name!='')
+                    {
+                        meForm.enableMenuOption('Costi');
+                        meForm.enableMenuOption('Produzione');
+                        meForm.updateMenu();
+
+
+                        localStorage.setItem('prj_script',result.prj_script);
+                        localStorage.setItem('form_data',JSON.stringify(result.form_data));
+                        localStorage.setItem('prj_data',JSON.stringify(result.prj_data));
+                        localStorage.setItem('prj_title',result.prj_title);
+                        localStorage.setItem('prj_name',result.prj_name);
+                        location.reload(false);
+
+                    }
+                   }
+            })
+    }
+
+
+    function action_taglia()
+      {
+       $('#data_form').attr('action',"{%static 'plasmacut/nesting'%}");
+       $('#data_form').submit();
+      }
+
+    function action_costi()
+      {
+       $('#data_form').attr('action',"{%static 'platecut/costi' %}");
+       $('#data_form').submit();
+      }
+
+    function action_esportaDXF()
+      {
+       //raccolgo dati form in struttura json
+       var param={"data_form":$("#data_form").serializeJSON({useIntKeysAsArrayIndex: true})}
+       //invio una chiamata ajax
+       $.ajax({
+           url: "exportDXF",
+           type: "POST",
+           data: {'jsonstring':JSON.stringify(param),
+                  'name':localStorage.getItem('prj_name'),
+                  'csrfmiddlewaretoken':csrftoken},
+           dataType: "json",
+           success:function(result)
+                   {
+                    var blob = new Blob(result.dxf);
+                    saveAs(blob, "ITEM.DXF");
+                   }
+            })
+      }
+
+
+    function action_esportaSTL()
+      {
+       alert('esportaSTL in azione!!');
+       var blob = new Blob([exportSTL(objects.project.element)], {type: "text/plain;charset=utf-8"});
+       saveAs(blob, "ITEM.STL");
+      }
+
+
+    function update_prj_data()
+    {
+       localStorage.setItem('prj_data',JSON.stringify($("#data_form").serializeJSON({useIntKeysAsArrayIndex: true}),null,4));
+    }
+
+
+    function update_item()
+      {
+       //get form parameters
+       PARAMETERS_MODIFIED=false
+       MODIFICATION_IN_PROGRESS=true
+
+       //ajax call
+       $.ajax({
+           url: "createItem",
+           type: "POST",
+           data: {'jsonstring':localStorage.prj_data,
+                  'name':localStorage.prj_name,
+                  'csrfmiddlewaretoken':csrftoken},
+           dataType: "json",
+           success:function(result)
+                   {
+                    localStorage.setItem('item',result.item);
+                   },
+            complete:function(result)
+                  {
+                   if (PARAMETERS_MODIFIED)
+                      {update_item()}
+                    else
+                      {
+                       MODIFICATION_IN_PROGRESS=false;
+                      }
+                  }
+            })
+
+      }
+
+    function refresh_form()
+    {
+        update_prj_data();
+        meForm.deployForm('projects',
+                          localStorage.prj_title,
+                          JSON.parse(localStorage.form_data),
+                          JSON.parse(localStorage.prj_data));
+    }
+
+
+    function loadPrj(n)
+     {
+             //Recupera il primo file dalla lista
+             var f = n.target.files[0];
+
+             if (f)
+             {
+                 var r = new FileReader();
+                 r.onload = function(e)
+                     {
+                         var contents = e.target.result;
+                         var result=JSON.parse(contents)
+                         localStorage.setItem('form_data',result.form_data)
+                         localStorage.setItem('prj_name',result.prj_name)
+                         localStorage.setItem('prj_script',result.prj_script)
+                         localStorage.setItem('prj_data',result.prj_data)
+                     }
+                 r.readAsText(f);
+
+                 location.reload(false);
+             }
+             else {alert("Problemi nel caricamento del file!");}
+        }
+
+    function action_savePrj()
+    {
+      var data = JSON.stringify(localStorage,null,'\t');
+      var blob = new Blob([data], {type: "text/plain;charset=utf-8"});
+      saveAs(blob, "ITEM.mePrj");
+    }
+
+    function action_archivia()
+      {
+        update_item();
+        var blob = new Blob([localStorage.item], {type: "text/plain;charset=utf-8"});
+        saveAs(blob, "ITEM.meItem");
+      }
+
+    </script>
+
+
+    <script>
+
+    if (localStorage.prj_data)
+    {
+        meForm.afterDeployForm=function(){update_all();};
+        meForm.enableMenuOption('Costi');
+        meForm.enableMenuOption('Produzione');
+        meForm.updateMenu();
+        var hS="<script id='prjScript'>"+localStorage.getItem('prj_script')+'</'+'script>'
+        $("script#prjScript").replaceWith(hS);
+        meForm.deployForm('projects',
+                          localStorage.getItem('prj_title'),
+                          JSON.parse(localStorage.form_data),
+                          JSON.parse(localStorage.prj_data));
+        update_shape();
+    }
+
+    </script>
+
+
+</body>
+</html>
